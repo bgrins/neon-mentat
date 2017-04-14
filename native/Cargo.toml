@@ -16,3 +16,8 @@ neon-build = "0.1.14"
 neon = "0.1.14"
 mentat = { git = "https://github.com/mozilla/mentat", branch = "rust" }
 mentat_db = { git = "https://github.com/mozilla/mentat", branch = "rust" }
+
+[dependencies.rusqlite]
+version = "0.10.1"
+# System sqlite might be very old.
+features = ["bundled", "limits"]

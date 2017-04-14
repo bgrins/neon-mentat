@@ -2,6 +2,7 @@
 extern crate neon;
 extern crate mentat;
 extern crate mentat_db;
+extern crate rusqlite;
 
 use neon::mem::Handle;
 use neon::vm::Lock;
@@ -13,12 +14,13 @@ use neon::js::class::{Class};
 use neon::js::error::{JsError, Kind};
 use mentat::{new_connection, q_once};
 
-
 pub struct User {
   id: i32,
   first_name: String,
   last_name: String,
   email: String,
+  connection: rusqlite::Connection,
+  db: mentat_db::DB,
 }
 
 declare_types! {
@@ -30,12 +32,35 @@ declare_types! {
         let last_name: Handle<JsString> = try!(try!(call.arguments.require(scope, 2)).check::<JsString>());
         let email: Handle<JsString> = try!(try!(call.arguments.require(scope, 3)).check::<JsString>());
 
+        let mut c = new_connection("").expect("Couldn't open conn.");
+        let db = mentat_db::db::ensure_current_version(&mut c).expect("Couldn't open DB.");
         Ok(User {
             id: id.value() as i32,
             first_name: first_name.value(),
             last_name: last_name.value(),
             email: email.value(),
+            connection: c,
+            db: db,
         })
+        }
+
+        method check_connection(call) {
+            let scope = call.scope;
+
+            // XXX: How do we get ahold of the connection without a clone?
+            let connection = call.arguments.this(scope).grab(|user| { user.connection });
+            let db = call.arguments.this(scope).grab(|user| { user.db });
+
+            let results = q_once(&connection,
+                                &db.schema,
+                                "[:find ?x ?ident :where [?x :db/ident ?ident]]",
+                                None,
+                                None)
+                .expect("Query failed");
+
+            // let s = JsString::new(scope, &results.len().to_string()).unwrap();
+            // Ok(try!(s))
+            Ok(try!(JsString::new_or_throw(scope, &results.len().to_string()[..])).upcast())
         }
 
         method get(call) {
