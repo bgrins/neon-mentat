@@ -1,3 +1,20 @@
-language: node_js
+language: rust
+sudo: required
+
+dist: trusty
+rust:
+  - stable
+  - beta
+  - nightly
+
 before_install:
-  - "npm install -g neon"
+  - source $HOME/.nvm/nvm.sh
+  - nvm install ${TRAVIS_NODE_VERSION}
+  - nvm use ${TRAVIS_NODE_VERSION}
+
+matrix:
+  allow_failures:
+    - rust: nightly
+
+script: |
+  npm test
