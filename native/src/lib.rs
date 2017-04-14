@@ -3,13 +3,72 @@ extern crate neon;
 extern crate mentat;
 extern crate mentat_db;
 
+use neon::mem::Handle;
+use neon::vm::Lock;
 use neon::vm::{Call, JsResult};
-use neon::js::JsString;
-use mentat::{
-    new_connection,
-    q_once,
-};
 
+use neon::js::{JsString,JsNumber, Object};
+use neon::js::class::{Class};
+
+use neon::js::error::{JsError, Kind};
+use mentat::{new_connection, q_once};
+
+
+pub struct User {
+  id: i32,
+  first_name: String,
+  last_name: String,
+  email: String,
+}
+
+declare_types! {
+  pub class JsUser for User {
+        init(call) {
+        let scope = call.scope;
+        let id = try!(try!(call.arguments.require(scope, 0)).check::<JsNumber>());
+        let first_name: Handle<JsString> = try!(try!(call.arguments.require(scope, 1)).check::<JsString>());
+        let last_name: Handle<JsString> = try!(try!(call.arguments.require(scope, 2)).check::<JsString>());
+        let email: Handle<JsString> = try!(try!(call.arguments.require(scope, 3)).check::<JsString>());
+
+        Ok(User {
+            id: id.value() as i32,
+            first_name: first_name.value(),
+            last_name: last_name.value(),
+            email: email.value(),
+        })
+        }
+
+        method get(call) {
+        let scope = call.scope;
+
+        let attr: String = try!(try!(call.arguments.require(scope, 0)).check::<JsString>()).value();
+
+        match &attr[..] {
+            "id" => {
+            let id = call.arguments.this(scope).grab(|user| { user.id.clone() });
+            Ok(JsNumber::new(scope, id as f64).upcast())
+            },
+            "first_name" => {
+            let first_name = call.arguments.this(scope).grab(|user| { user.first_name.clone() });
+            Ok(try!(JsString::new_or_throw(scope, &first_name[..])).upcast())
+            },
+            "last_name" => {
+            let last_name = call.arguments.this(scope).grab(|user| { user.last_name.clone() });
+            Ok(try!(JsString::new_or_throw(scope, &last_name[..])).upcast())
+            },
+            "email" => {
+            let email = call.arguments.this(scope).grab(|user| { user.email.clone() });
+            Ok(try!(JsString::new_or_throw(scope, &email[..])).upcast())
+            },
+            _ => JsError::throw(Kind::TypeError, "property does not exist")
+        }
+        }
+
+        method panic(_) {
+        panic!("User.prototype.panic")
+        }
+    }
+}
 
 fn hello(call: Call) -> JsResult<JsString> {
     let scope = call.scope;
@@ -22,8 +81,11 @@ fn test_new_connection(call: Call) -> JsResult<JsString> {
     let db = mentat_db::db::ensure_current_version(&mut c).expect("Couldn't open DB.");
     let scope = call.scope;
 
-    let results = q_once(&c, &db.schema,
-                         "[:find ?x ?ident :where [?x :db/ident ?ident]]", None, None)
+    let results = q_once(&c,
+                         &db.schema,
+                         "[:find ?x ?ident :where [?x :db/ident ?ident]]",
+                         None,
+                         None)
         .expect("Query failed");
 
     let s = JsString::new(scope, &results.len().to_string()).unwrap();
@@ -81,5 +143,10 @@ register_module!(m, {
     try!(m.export("hello", hello));
     try!(m.export("test_connection", test_connection));
     try!(m.export("test_new_connection", test_new_connection));
+
+    let class = try!(JsUser::class(m.scope));       // get the class
+    let constructor = try!(class.constructor(m.scope)); // get the constructor
+    try!(m.exports.set("User", constructor));
+
     Ok(())
 });

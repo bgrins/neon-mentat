@@ -4,8 +4,8 @@ sudo: required
 dist: trusty
 rust:
   - stable
-  - beta
-  - nightly
+  # beta
+  # nightly
 
 before_install:
   - source $HOME/.nvm/nvm.sh
