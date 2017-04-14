@@ -13,6 +13,7 @@ before_install:
   - nvm use 7
   - npm install -g neon-cli
   - npm install -g mocha
+  - npm install
 
 matrix:
   allow_failures:
