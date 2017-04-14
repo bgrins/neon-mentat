@@ -1,0 +1,14 @@
+{
+  "name": "neon-project",
+  "version": "0.1.0",
+  "description": "test",
+  "main": "lib/index.js",
+  "author": "Brian Grinstead <briangrinstead@gmail.com>",
+  "license": "MIT",
+  "dependencies": {
+    "neon-cli": "^0.1.14"
+  },
+  "scripts": {
+    "install": "neon build"
+  }
+}

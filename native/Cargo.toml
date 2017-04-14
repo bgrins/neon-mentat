@@ -1,0 +1,17 @@
+[package]
+name = "neon-project"
+version = "0.1.0"
+authors = ["Brian Grinstead <briangrinstead@gmail.com>"]
+license = "MIT"
+build = "build.rs"
+
+[lib]
+name = "neon_project"
+crate-type = ["dylib"]
+
+[build-dependencies]
+neon-build = "0.1.14"
+
+[dependencies]
+neon = "0.1.14"
+mentat = { git = "https://github.com/mozilla/mentat", branch = "rust" }
