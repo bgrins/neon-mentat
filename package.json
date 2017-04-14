@@ -6,9 +6,11 @@
   "author": "Brian Grinstead <briangrinstead@gmail.com>",
   "license": "MIT",
   "dependencies": {
+    "mocha": "^3.2.0",
     "neon-cli": "^0.1.14"
   },
   "scripts": {
-    "install": "neon build"
+    "install": "neon build",
+    "test": "mocha"
   }
 }
