@@ -10,6 +10,7 @@
     "neon-cli": "^0.1.14"
   },
   "scripts": {
+    "start": "npm install && node -e 'require(\"./\")'",
     "install": "neon build",
     "test": "mocha"
   }
