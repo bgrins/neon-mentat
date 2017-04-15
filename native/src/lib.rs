@@ -12,14 +12,17 @@ use neon::js::{JsString,JsNumber, Object};
 use neon::js::class::{Class};
 
 use neon::js::error::{JsError, Kind};
-use mentat::{new_connection, q_once};
+use mentat::{new_connection, q_once, QueryResults};
+
+use std::rc::Rc;
+use std::cell::RefCell;
 
 pub struct User {
   id: i32,
   first_name: String,
   last_name: String,
   email: String,
-  connection: rusqlite::Connection,
+  connection: Rc<RefCell<rusqlite::Connection>>,
   db: mentat_db::DB,
 }
 
@@ -32,8 +35,9 @@ declare_types! {
         let last_name: Handle<JsString> = try!(try!(call.arguments.require(scope, 2)).check::<JsString>());
         let email: Handle<JsString> = try!(try!(call.arguments.require(scope, 3)).check::<JsString>());
 
-        let mut c = new_connection("").expect("Couldn't open conn.");
-        let db = mentat_db::db::ensure_current_version(&mut c).expect("Couldn't open DB.");
+        let mut c = Rc::new(RefCell::new(new_connection("").expect("Couldn't open conn.")));
+        let db = mentat_db::db::ensure_current_version(&mut c.borrow_mut()).expect("Couldn't open DB.");
+        
         Ok(User {
             id: id.value() as i32,
             first_name: first_name.value(),
@@ -48,8 +52,9 @@ declare_types! {
             let scope = call.scope;
 
             // XXX: How do we get ahold of the connection without a clone?
-            let connection = call.arguments.this(scope).grab(|user| { user.connection });
-            let db = call.arguments.this(scope).grab(|user| { user.db });
+            let mut args = call.arguments.this(scope);
+            let connection = args.grab(|user| { user.connection.borrow_mut() });
+            let db = call.arguments.this(scope).grab(|user| { user.db.clone() });
 
             let results = q_once(&connection,
                                 &db.schema,
