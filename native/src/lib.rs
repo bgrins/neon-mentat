@@ -8,22 +8,63 @@ use neon::mem::Handle;
 use neon::vm::Lock;
 use neon::vm::{Call, JsResult};
 
-use neon::js::{JsString,JsNumber, Object};
-use neon::js::class::{Class};
+use neon::js::{JsString, JsNumber, Object};
+use neon::js::class::Class;
 
 use neon::js::error::{JsError, Kind};
-use mentat::{new_connection, q_once, QueryResults};
+use mentat::{new_connection, q_once}; // QueryResults
 
 use std::rc::Rc;
 use std::cell::RefCell;
 
+
+pub struct Connection {
+    conn: Rc<RefCell<rusqlite::Connection>>,
+    db: mentat_db::DB,
+}
+
+declare_types! {
+  pub class JsConnection for Connection {
+        init(call) {
+            // TODO: Receive path in constructor
+            let scope = call.scope;
+            // let path: Handle<JsString> = try!(try!(call.arguments.require(scope, 0)).check::<JsString>());
+            
+            let c = Rc::new(RefCell::new(new_connection("").expect("Couldn't open conn.")));
+            let db = mentat_db::db::ensure_current_version(&mut c.borrow_mut()).expect("Couldn't open DB.");
+            
+            Ok(Connection {
+                conn: c,
+                db: db,
+            })
+        }
+
+        // TODO: Take in parameters and pass back results
+        method query(call) {
+            let scope = call.scope;
+            let mut args = call.arguments.this(scope);
+            let connection = args.grab(|user| { user.conn.borrow_mut() });
+            let db = call.arguments.this(scope).grab(|user| { user.db.clone() });
+
+            let results = q_once(&connection,
+                                &db.schema,
+                                "[:find ?x ?ident :where [?x :db/ident ?ident]]",
+                                None,
+                                None)
+                .expect("Query failed");
+
+            Ok(try!(JsString::new_or_throw(scope, &results.len().to_string()[..])).upcast())
+        }
+
+
+  }
+}
+
 pub struct User {
-  id: i32,
-  first_name: String,
-  last_name: String,
-  email: String,
-  connection: Rc<RefCell<rusqlite::Connection>>,
-  db: mentat_db::DB,
+    id: i32,
+    first_name: String,
+    last_name: String,
+    email: String,
 }
 
 declare_types! {
@@ -35,37 +76,12 @@ declare_types! {
         let last_name: Handle<JsString> = try!(try!(call.arguments.require(scope, 2)).check::<JsString>());
         let email: Handle<JsString> = try!(try!(call.arguments.require(scope, 3)).check::<JsString>());
 
-        let mut c = Rc::new(RefCell::new(new_connection("").expect("Couldn't open conn.")));
-        let db = mentat_db::db::ensure_current_version(&mut c.borrow_mut()).expect("Couldn't open DB.");
-        
         Ok(User {
             id: id.value() as i32,
             first_name: first_name.value(),
             last_name: last_name.value(),
             email: email.value(),
-            connection: c,
-            db: db,
         })
-        }
-
-        method check_connection(call) {
-            let scope = call.scope;
-
-            // XXX: How do we get ahold of the connection without a clone?
-            let mut args = call.arguments.this(scope);
-            let connection = args.grab(|user| { user.connection.borrow_mut() });
-            let db = call.arguments.this(scope).grab(|user| { user.db.clone() });
-
-            let results = q_once(&connection,
-                                &db.schema,
-                                "[:find ?x ?ident :where [?x :db/ident ?ident]]",
-                                None,
-                                None)
-                .expect("Query failed");
-
-            // let s = JsString::new(scope, &results.len().to_string()).unwrap();
-            // Ok(try!(s))
-            Ok(try!(JsString::new_or_throw(scope, &results.len().to_string()[..])).upcast())
         }
 
         method get(call) {
@@ -174,9 +190,13 @@ register_module!(m, {
     try!(m.export("test_connection", test_connection));
     try!(m.export("test_new_connection", test_new_connection));
 
-    let class = try!(JsUser::class(m.scope));       // get the class
-    let constructor = try!(class.constructor(m.scope)); // get the constructor
-    try!(m.exports.set("User", constructor));
+    let user_class = try!(JsUser::class(m.scope));
+    let user_constructor = try!(user_class.constructor(m.scope));
+    try!(m.exports.set("User", user_constructor));
+
+    let connection_class = try!(JsConnection::class(m.scope));
+    let connection_constructor = try!(connection_class.constructor(m.scope));
+    try!(m.exports.set("Connection", connection_constructor));
 
     Ok(())
 });
