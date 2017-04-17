@@ -1,3 +1,6 @@
+
+#![allow(unused_variables)]
+
 #[macro_use]
 extern crate neon;
 extern crate mentat;
@@ -12,7 +15,7 @@ use neon::js::{JsString, JsNumber, Object};
 use neon::js::class::Class;
 
 use neon::js::error::{JsError, Kind};
-use mentat::{new_connection, q_once}; // QueryResults
+use mentat::{new_connection, q_once, conn}; // QueryResults
 
 use std::rc::Rc;
 use std::cell::RefCell;
@@ -20,7 +23,7 @@ use std::cell::RefCell;
 
 pub struct Connection {
     rusqlite_connection: Rc<RefCell<rusqlite::Connection>>,
-    db: mentat_db::DB,
+    conn: Rc<RefCell<conn::Conn>>,
 }
 
 declare_types! {
@@ -29,25 +32,48 @@ declare_types! {
             // TODO: Receive path in constructor
             let scope = call.scope;
             // let path: Handle<JsString> = try!(try!(call.arguments.require(scope, 0)).check::<JsString>());
-            
+
             let c = Rc::new(RefCell::new(new_connection("").expect("Couldn't open conn.")));
-            let db = mentat_db::db::ensure_current_version(&mut c.borrow_mut()).expect("Couldn't open DB.");
-            
+            let conn = Rc::new(RefCell::new(conn::Conn::connect(&mut c.borrow_mut()).expect("Couldn't open DB.")));
+
             Ok(Connection {
                 rusqlite_connection: c,
-                db: db,
+                conn: conn,
             })
+        }
+
+        method close(call) {
+            let scope = call.scope;
+
+            Ok(try!(JsString::new_or_throw(scope, &"Not implemented"[..])).upcast())
+        }
+
+        // TODO: Take in parameters and pass back results
+        method transact(call) {
+            let scope = call.scope;
+
+            let mut args1 = call.arguments.this(scope);
+            let mut rusqlite_connection = args1.grab(|user| { user.rusqlite_connection.borrow_mut() });
+            let mut args2 = call.arguments.this(scope);
+            let mut db = args2.grab(|user| { user.conn.borrow_mut() });
+
+            let results = &db.transact(&mut rusqlite_connection,
+                                "[]")
+                .expect("Query failed");
+
+            Ok(try!(JsString::new_or_throw(scope, &results.tx_id.to_string()[..])).upcast())
         }
 
         // TODO: Take in parameters and pass back results
         method query(call) {
             let scope = call.scope;
-            let mut args = call.arguments.this(scope);
-            let rusqlite_connection = args.grab(|user| { user.rusqlite_connection.borrow_mut() });
-            let db = call.arguments.this(scope).grab(|user| { user.db.clone() });
 
-            let results = q_once(&rusqlite_connection,
-                                &db.schema,
+            let mut args1 = call.arguments.this(scope);
+            let rusqlite_connection = args1.grab(|user| { user.rusqlite_connection.borrow_mut() });
+            let mut args2 = call.arguments.this(scope);
+            let db = args2.grab(|user| { user.conn.borrow_mut() });
+
+            let results = &db.q_once(&rusqlite_connection,
                                 "[:find ?x ?ident :where [?x :db/ident ?ident]]",
                                 None,
                                 None)
@@ -55,8 +81,6 @@ declare_types! {
 
             Ok(try!(JsString::new_or_throw(scope, &results.len().to_string()[..])).upcast())
         }
-
-
   }
 }
 
