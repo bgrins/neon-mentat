@@ -1,5 +1,4 @@
 var Connection = require("../native").Connection;
-var User = require("../native").User;
 var assert = require('assert');
 
 describe('Connection', function() {
