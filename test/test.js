@@ -445,9 +445,19 @@ describe('Connection', function () {
             var input = `
                 [:find ?e
                 :where
-                [?e :person/name "James Cameron"]]`;
-            assert.equal(conn.query(input), '1'); // TODO: this isn't right
+                [?e :person/name "James Cameron" _]]`;
+            assert.equal(conn.query(input), 1);
         });
+        it('should query (2)', function () {
+            var input = `
+                [:find ?title
+                :where
+                [?e :movie/year 1987]
+                [?e :movie/title ?title]]
+            `;
+            assert.equal(conn.query(input), 3);
+        });
+
 
         it('should close', function () {
             assert.equal(conn.close(), "Not implemented");
