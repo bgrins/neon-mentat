@@ -19,7 +19,7 @@ use std::cell::RefCell;
 
 
 pub struct Connection {
-    conn: Rc<RefCell<rusqlite::Connection>>,
+    rusqlite_connection: Rc<RefCell<rusqlite::Connection>>,
     db: mentat_db::DB,
 }
 
@@ -34,7 +34,7 @@ declare_types! {
             let db = mentat_db::db::ensure_current_version(&mut c.borrow_mut()).expect("Couldn't open DB.");
             
             Ok(Connection {
-                conn: c,
+                rusqlite_connection: c,
                 db: db,
             })
         }
@@ -43,10 +43,10 @@ declare_types! {
         method query(call) {
             let scope = call.scope;
             let mut args = call.arguments.this(scope);
-            let connection = args.grab(|user| { user.conn.borrow_mut() });
+            let rusqlite_connection = args.grab(|user| { user.rusqlite_connection.borrow_mut() });
             let db = call.arguments.this(scope).grab(|user| { user.db.clone() });
 
-            let results = q_once(&connection,
+            let results = q_once(&rusqlite_connection,
                                 &db.schema,
                                 "[:find ?x ?ident :where [?x :db/ident ?ident]]",
                                 None,
