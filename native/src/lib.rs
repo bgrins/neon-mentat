@@ -51,6 +51,7 @@ declare_types! {
         // TODO: Take in parameters and pass back results
         method transact(call) {
             let scope = call.scope;
+            let input: Handle<JsString> = try!(try!(call.arguments.require(scope, 0)).check::<JsString>());
 
             let mut args1 = call.arguments.this(scope);
             let mut rusqlite_connection = args1.grab(|user| { user.rusqlite_connection.borrow_mut() });
@@ -58,8 +59,7 @@ declare_types! {
             let mut db = args2.grab(|user| { user.conn.borrow_mut() });
 
             let results = &db.transact(&mut rusqlite_connection,
-                                "[]")
-                .expect("Query failed");
+                                input.value().as_str()).expect("Query failed");
 
             Ok(try!(JsString::new_or_throw(scope, &results.tx_id.to_string()[..])).upcast())
         }
@@ -67,6 +67,7 @@ declare_types! {
         // TODO: Take in parameters and pass back results
         method query(call) {
             let scope = call.scope;
+            let input: Handle<JsString> = try!(try!(call.arguments.require(scope, 0)).check::<JsString>());
 
             let mut args1 = call.arguments.this(scope);
             let rusqlite_connection = args1.grab(|user| { user.rusqlite_connection.borrow_mut() });
@@ -74,7 +75,7 @@ declare_types! {
             let db = args2.grab(|user| { user.conn.borrow_mut() });
 
             let results = &db.q_once(&rusqlite_connection,
-                                "[:find ?x ?ident :where [?x :db/ident ?ident]]",
+                                input.value().as_str(),
                                 None,
                                 None)
                 .expect("Query failed");
