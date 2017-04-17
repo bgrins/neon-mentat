@@ -1,13 +1,11 @@
 # neon-mentat
 
-This project uses [neon bindings](https://github.com/neon-bindings/neon#getting-started), so the first thing to do is run:
+This project uses [neon bindings](https://github.com/neon-bindings/neon#getting-started).
 
-```npm install -g neon-cli```
-
-Then to run, just do:
+To run, use:
 
 ```npm start```
 
-To run tests, do:
+To test, use:
 
 ```npm test```

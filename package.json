@@ -11,7 +11,7 @@
   },
   "scripts": {
     "start": "npm install && node -e 'require(\"./\")'",
-    "install": "neon build",
+    "install": "node node_modules/neon-cli/bin/cli.js build",
     "test": "mocha"
   }
 }
