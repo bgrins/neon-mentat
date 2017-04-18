@@ -111,10 +111,10 @@ declare_types! {
                             }
                         }
 
-                        j = j+1;
+                        j = j + 1;
                     }
-                    i = i + 1;
                     try!(array.set(i, r_array));
+                    i = i + 1;
                     try!(output.set("results", array));
                 }
             }

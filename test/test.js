@@ -467,8 +467,7 @@ describe('Connection', function () {
                 :where
                 [?p :person/name ?name]]`;
             var result = conn.query(input);
-            console.log(result);
-            assert.equal(result.resultsLength, 50);
+            assert.deepEqual(result.results, [['Sophie Marceau' ],[ 'Tina Turner' ],[ 'George Ogilvie' ],[ 'Bruce Spence' ],[ 'Michael Preston' ],[ 'Joanne Samuel' ],[ 'Steve Bisley' ],[ 'George Miller' ],[ 'Carrie Henn' ],[ 'Veronica Cartwright' ],[ 'Sigourney Weaver' ],[ 'Tom Skerritt' ],[ 'Ridley Scott' ],[ 'Joe Pesci' ],[ 'Ruben Blades' ],[ 'Stephen Hopkins' ],[ 'Marc de Jonge' ],[ 'Peter MacDonald' ],[ 'Charles Napier' ],[ 'George P. Cosmatos' ],[ 'Claire Danes' ],[ 'Nick Stahl' ],[ 'Jonathan Mostow' ],[ 'Edward Furlong' ],[ 'Robert Patrick' ],[ 'Alexander Godunov' ],[ 'Alan Rickman' ],[ 'Bruce Willis' ],[ 'Alyssa Milano' ],[ 'Rae Dawn Chong' ],[ 'Mark L. Lester' ],[ 'Ronny Cox' ],[ 'Nancy Allen' ],[ 'Peter Weller' ],[ 'Paul Verhoeven' ],[ 'Gary Busey' ],[ 'Danny Glover' ],[ 'Mel Gibson' ],[ 'Richard Donner' ],[ 'Carl Weathers' ],[ 'Elpidia Carrillo' ],[ 'John McTiernan' ],[ 'Brian Dennehy' ],[ 'Richard Crenna' ],[ 'Sylvester Stallone' ],[ 'Ted Kotcheff' ],[ 'Michael Biehn' ],[ 'Linda Hamilton' ],[ 'Arnold Schwarzenegger' ],[ 'James Cameron' ] ]);
         });
 
         it('should query (4)', function () {
