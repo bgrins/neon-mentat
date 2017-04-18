@@ -450,7 +450,7 @@ describe('Connection', function () {
         });
         it('should query (2)', function () {
             var input = `
-                [:find ?title
+                [:find ?e
                 :where
                 [?e :movie/year 1987]
                 [?e :movie/title ?title]]

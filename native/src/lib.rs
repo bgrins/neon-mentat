@@ -6,8 +6,10 @@
 extern crate neon;
 extern crate mentat;
 extern crate mentat_db;
+extern crate mentat_core;
 extern crate rusqlite;
 
+use mentat_core::{TypedValue, ValueType};
 use neon::mem::Handle;
 use neon::vm::Lock;
 use neon::vm::{Call, JsResult};
@@ -16,7 +18,7 @@ use neon::js::{JsString, JsNumber, Object};
 use neon::js::class::Class;
 
 use neon::js::error::{JsError, Kind};
-use mentat::{new_connection, conn}; // QueryResults
+use mentat::{new_connection, conn, QueryResults};
 
 use std::rc::Rc;
 use std::cell::RefCell;
@@ -80,6 +82,25 @@ declare_types! {
                                 None,
                                 None)
                 .expect("Query failed");
+
+            if let &QueryResults::Scalar(Some(TypedValue::Keyword(ref rc))) = results {
+                println!("Matched Scalar: {:?}", rc);
+            }
+
+            if let &QueryResults::Rel(ref rel) = results {
+                println!("Matched Rel: {}", rel.len());
+                for r in rel {
+                    println!("Rel: {:?}", r);
+                }
+            }
+
+            if let &QueryResults::Tuple(Some(ref tuple)) = results {
+                println!("Matched Tuple: {:?}", tuple);
+            }
+
+            if let &QueryResults::Coll(ref coll) = results {
+                println!("Matched Coll: {:?}", coll);
+            }
 
             Ok(try!(JsString::new_or_throw(scope, &results.len().to_string()[..])).upcast())
         }
