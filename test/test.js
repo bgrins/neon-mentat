@@ -6,11 +6,13 @@ describe('Connection', function () {
         var conn = new Connection();
         it('should transact', function () {
             var input = "[]";
-            assert.equal(conn.transact(input), 0x10000000 + 1);
+            var result = conn.transact(input);
+            assert.equal(result, 0x10000000 + 1);
         });
         it('should query', function () {
             var input = "[:find ?x ?ident :where [?x :db/ident ?ident]]";
-            assert.equal(conn.query(input), 37);
+            var result = conn.query(input);
+            assert.equal(result.resultsLength, 37);
         });
         it('should close', function () {
             assert.equal(conn.close(), "Not implemented");
@@ -56,7 +58,8 @@ describe('Connection', function () {
             :db/valueType :db.type/string
             :db/cardinality :db.cardinality/many}
         ]`;
-            assert.equal(conn.transact(input), 0x10000000 + 1);
+            var result = conn.transact(input);
+            assert.equal(result, 0x10000000 + 1);
         });
         it('should transact (2)', function () {
             var input = `[
@@ -434,19 +437,26 @@ describe('Connection', function () {
                 :movie/cast [-112
                             -149]}
             ]`;
-
-            conn.transact(input);
+            var result = conn.transact(input);
         });
         it('should query (1)', function () {
             var input = "[:find ?x ?ident :where [?x :db/ident ?ident]]";
-            assert.equal(conn.query(input), 46);
+            var result = conn.query(input);
+            assert.equal(result.resultsLength, 46);
+        });
+        it('should query (Coll)', function() {
+            var input = `[:find [?e ...] :where [?e :db/ident _]]`;
+            var result = conn.query(input);
+            console.log(result);
+            assert.equal(result.resultsLength, 46);
         });
         it('should query (2)', function () {
             var input = `
                 [:find ?e
                 :where
                 [?e :person/name "James Cameron" _]]`;
-            assert.equal(conn.query(input), 1);
+            var result = conn.query(input);
+            assert.equal(result.resultsLength, 1);
         });
         it('should query (2)', function () {
             var input = `
@@ -455,7 +465,8 @@ describe('Connection', function () {
                 [?e :movie/year 1987]
                 [?e :movie/title ?title]]
             `;
-            assert.equal(conn.query(input), 3);
+            var result = conn.query(input);
+            assert.equal(result.resultsLength, 3);
         });
 
 

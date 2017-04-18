@@ -14,7 +14,7 @@ use neon::mem::Handle;
 use neon::vm::Lock;
 use neon::vm::{Call, JsResult};
 
-use neon::js::{JsString, JsNumber, Object};
+use neon::js::{JsString, JsNumber, Object, JsArray, JsObject, JsInteger};
 use neon::js::class::Class;
 
 use neon::js::error::{JsError, Kind};
@@ -70,6 +70,8 @@ declare_types! {
         // TODO: Take in parameters and pass back results
         method query(call) {
             let scope = call.scope;
+            let output = JsObject::new(scope);
+
             let input: Handle<JsString> = try!(try!(call.arguments.require(scope, 0)).check::<JsString>());
 
             let mut args1 = call.arguments.this(scope);
@@ -99,10 +101,28 @@ declare_types! {
             }
 
             if let &QueryResults::Coll(ref coll) = results {
-                println!("Matched Coll: {:?}", coll);
+                // println!("Matched Coll: {:?}", coll);
+                let iter = coll.iter();
+                let array: Handle<JsArray> = JsArray::new(scope, iter.len() as u32);
+                let mut i = 0;
+                for item in iter {
+                    let neon_value = match item {
+                        &TypedValue::Ref(id) => JsString::new_or_throw(scope, id.to_string().as_str()),
+                        _ => JsString::new_or_throw(scope, &"Not implemented"[..]),
+                        // &TypedValue::String(s) => JsString::new_or_throw(scope, s)
+                        // &TypedValue::Boolean(b) => JsString::new_or_throw(scope, b)
+                        // &TypedValue::String(s) => JsString::new_or_throw(scope, s)
+                    };
+
+                    try!(array.set(i, neon_value.unwrap()));
+                    i = i+1;
+                }
+
+                try!(output.set("results", array));
             }
 
-            Ok(try!(JsString::new_or_throw(scope, &results.len().to_string()[..])).upcast())
+            try!(output.set("resultsLength", JsInteger::new(scope, results.len() as i32)));
+            Ok(output.upcast())
         }
   }
 }
