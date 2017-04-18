@@ -14,7 +14,7 @@ use neon::mem::Handle;
 use neon::vm::Lock;
 use neon::vm::{Call, JsResult};
 
-use neon::js::{JsString, JsNumber, Object, JsArray, JsObject, JsInteger};
+use neon::js::{JsString, JsNumber, Object, JsArray, JsObject, JsInteger, JsBoolean};
 use neon::js::class::Class;
 
 use neon::js::error::{JsError, Kind};
@@ -106,15 +106,8 @@ declare_types! {
                 let array: Handle<JsArray> = JsArray::new(scope, iter.len() as u32);
                 let mut i = 0;
                 for item in iter {
-                    let neon_value = match item {
-                        &TypedValue::Ref(id) => JsString::new_or_throw(scope, id.to_string().as_str()),
-                        _ => JsString::new_or_throw(scope, &"Not implemented"[..]),
-                        // &TypedValue::String(s) => JsString::new_or_throw(scope, s)
-                        // &TypedValue::Boolean(b) => JsString::new_or_throw(scope, b)
-                        // &TypedValue::String(s) => JsString::new_or_throw(scope, s)
-                    };
-
-                    try!(array.set(i, neon_value.unwrap()));
+                    let processed_value = process_typed_value(scope, item);
+                    try!(array.set(i, processed_value));
                     i = i+1;
                 }
 
@@ -125,6 +118,19 @@ declare_types! {
             Ok(output.upcast())
         }
   }
+}
+
+
+fn process_typed_value<'a, 'b>(scope: &mut neon::scope::RootScope<'a>, item: &'b TypedValue) -> Handle<'a, JsString> {
+    let neon_value = match item {
+        &TypedValue::Ref(id) => JsString::new_or_throw(scope, id.to_string().as_str()),
+        _ => JsString::new_or_throw(scope, &"Not implemented"[..]),
+        // &TypedValue::Boolean(b) => JsBoolean::new(scope, b),
+        // &TypedValue::String(s) => JsString::new_or_throw(scope, s)
+        // &TypedValue::String(s) => JsString::new_or_throw(scope, s)
+    };
+
+    return neon_value.unwrap();
 }
 
 register_module!(m, {
