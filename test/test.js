@@ -442,6 +442,7 @@ describe('Connection', function () {
         it('should query (1)', function () {
             var input = "[:find ?x ?ident :where [?x :db/ident ?ident]]";
             var result = conn.query(input);
+            console.log(result);
             assert.equal(result.resultsLength, 46);
         });
         it('should query (Coll)', function() {
@@ -456,9 +457,21 @@ describe('Connection', function () {
                 :where
                 [?e :person/name "James Cameron" _]]`;
             var result = conn.query(input);
+            console.log(result);
             assert.equal(result.resultsLength, 1);
         });
-        it('should query (2)', function () {
+
+        it('should query (3)', function () {
+            var input = `
+                [:find ?name
+                :where
+                [?p :person/name ?name]]`;
+            var result = conn.query(input);
+            console.log(result);
+            assert.equal(result.resultsLength, 50);
+        });
+
+        it('should query (4)', function () {
             var input = `
                 [:find ?e
                 :where
@@ -466,6 +479,7 @@ describe('Connection', function () {
                 [?e :movie/title ?title]]
             `;
             var result = conn.query(input);
+            console.log(result);
             assert.equal(result.resultsLength, 3);
         });
 
