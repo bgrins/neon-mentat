@@ -10,7 +10,7 @@
     "neon-cli": "^0.1.14"
   },
   "scripts": {
-    "start": "npm install && node -e 'require(\"./\")'",
+    "start": "npm install && node -e 'require(\"./lib/index\")'",
     "postinstall": "node .bin/postinstall.js",
     "test": "mocha"
   }
