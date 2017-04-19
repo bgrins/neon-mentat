@@ -85,68 +85,69 @@ declare_types! {
                                 None)
                 .expect("Query failed");
 
-            if let &QueryResults::Scalar(Some(TypedValue::Keyword(ref rc))) = results {
-                println!("TODO: Matched Scalar: {:?}", rc);
-            }
-
-            if let &QueryResults::Rel(ref rel) = results {
-                let iter = rel.iter();
-                let array: Handle<JsArray> = JsArray::new(scope, iter.len() as u32);
-                let mut i = 0;
-                for r in rel {
-                    let r_iter = r.iter();
-                    let r_array: Handle<JsArray> = JsArray::new(scope, r_iter.len() as u32);
-                    let mut j = 0;
-                    for item in r_iter {
+            use QueryResults::*;
+            match results {
+                &Scalar(None) => {
+                    println!("TODO: Matched Scalar None");
+                    // Didn't return a result. JS `undefined`?
+                },
+                &Scalar(Some(ref v)) => {
+                    println!("TODO: Matched Scalar Some {:?}", v);
+                    // process_typed_value(scope, v)
+                },
+                &Tuple(None) => {
+                    println!("TODO: Matched Tuple None");
+                },
+                &Tuple(Some(ref tuple)) => {
+                    println!("TODO: Matched Tuple: {:?}", tuple);
+                },
+                &Coll(ref coll) => {
+                    // println!("Matched Coll: {:?}", coll);
+                    let iter = coll.iter();
+                    let array: Handle<JsArray> = JsArray::new(scope, iter.len() as u32);
+                    for (i, item) in iter.enumerate() {
                         let processed_value = process_typed_value(scope, item);
+
+                        // TODO: Can we match all possible types with a single pattern
                         match processed_value {
                             ReturnedHandle::JsString(handle) => {
-                                try!(r_array.set(j, handle));
+                                try!(array.set(i as u32, handle));
                             }
                             ReturnedHandle::JsBoolean(handle) => {
-                                try!(r_array.set(j, handle));
+                                try!(array.set(i as u32, handle));
                             }
                             ReturnedHandle::JsNumber(handle) => {
-                                try!(r_array.set(j, handle));
+                                try!(array.set(i as u32, handle));
                             }
                         }
-
-                        j = j + 1;
                     }
-                    try!(array.set(i, r_array));
-                    i = i + 1;
+
                     try!(output.set("results", array));
                 }
-            }
-
-            if let &QueryResults::Tuple(Some(ref tuple)) = results {
-                println!("TODO: Matched Tuple: {:?}", tuple);
-            }
-
-            if let &QueryResults::Coll(ref coll) = results {
-                // println!("Matched Coll: {:?}", coll);
-                let iter = coll.iter();
-                let array: Handle<JsArray> = JsArray::new(scope, iter.len() as u32);
-                let mut i = 0;
-                for item in iter {
-                    let processed_value = process_typed_value(scope, item);
-
-                    // TODO: Can we match all possible types with a single pattern
-                    match processed_value {
-                        ReturnedHandle::JsString(handle) => {
-                            try!(array.set(i, handle));
+                &Rel(ref rel) => {
+                    let iter = rel.iter();
+                    let array: Handle<JsArray> = JsArray::new(scope, iter.len() as u32);
+                    for (i, r) in iter.enumerate() {
+                        let r_iter = r.iter();
+                        let r_array: Handle<JsArray> = JsArray::new(scope, r_iter.len() as u32);
+                        for (j, item) in r_iter.enumerate() {
+                            let processed_value = process_typed_value(scope, item);
+                            match processed_value {
+                                ReturnedHandle::JsString(handle) => {
+                                    try!(r_array.set(j as u32, handle));
+                                }
+                                ReturnedHandle::JsBoolean(handle) => {
+                                    try!(r_array.set(j as u32, handle));
+                                }
+                                ReturnedHandle::JsNumber(handle) => {
+                                    try!(r_array.set(j as u32, handle));
+                                }
+                            }
                         }
-                        ReturnedHandle::JsBoolean(handle) => {
-                            try!(array.set(i, handle));
-                        }
-                        ReturnedHandle::JsNumber(handle) => {
-                            try!(array.set(i, handle));
-                        }
+                        try!(array.set(i as u32, r_array));
                     }
-                    i = i+1;
+                    try!(output.set("results", array));
                 }
-
-                try!(output.set("results", array));
             }
 
             try!(output.set("resultsLength", JsInteger::new(scope, results.len() as i32)));
@@ -175,7 +176,7 @@ enum ReturnedHandle<'a> {
 
 fn process_typed_value<'a, 'b>(scope: &mut neon::scope::RootScope<'a>, item: &'b TypedValue) -> ReturnedHandle<'a> {
     let neon_value = match item {
-        &TypedValue::Ref(id) => ReturnedHandle::JsString(JsString::new_or_throw(scope, id.to_string().as_str()).unwrap()),
+        &TypedValue::Ref(id) => ReturnedHandle::JsNumber(JsNumber::new(scope, id as f64)),
         &TypedValue::Boolean(b) => ReturnedHandle::JsBoolean(JsBoolean::new(scope, b)),
         &TypedValue::Long(l) => ReturnedHandle::JsNumber(JsNumber::new(scope, l as f64)),
         &TypedValue::String(ref s) => ReturnedHandle::JsString(JsString::new_or_throw(scope, s.as_str()).unwrap()),
