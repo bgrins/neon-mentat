@@ -11,7 +11,6 @@ before_install:
   - source $HOME/.nvm/nvm.sh
   - nvm install 7
   - nvm use 7
-  - npm install -g neon-cli
   - npm install -g mocha
   - npm install
 
