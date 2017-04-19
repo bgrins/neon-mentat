@@ -88,18 +88,18 @@ declare_types! {
             use QueryResults::*;
             match results {
                 &Scalar(None) => {
-                    println!("TODO: Matched Scalar None");
+                    // println!("TODO: Matched Scalar None");
                     // Didn't return a result. JS `undefined`?
                 },
                 &Scalar(Some(ref v)) => {
-                    println!("TODO: Matched Scalar Some {:?}", v);
+                    // println!("TODO: Matched Scalar Some {:?}", v);
                     // process_typed_value(scope, v)
                 },
                 &Tuple(None) => {
-                    println!("TODO: Matched Tuple None");
+                    // println!("TODO: Matched Tuple None");
                 },
                 &Tuple(Some(ref tuple)) => {
-                    println!("TODO: Matched Tuple: {:?}", tuple);
+                    // println!("TODO: Matched Tuple: {:?}", tuple);
                 },
                 &Coll(ref coll) => {
                     // println!("Matched Coll: {:?}", coll);
