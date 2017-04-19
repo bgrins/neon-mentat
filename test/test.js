@@ -1,4 +1,4 @@
-var Connection = require("../native").Connection;
+var Connection = require("../lib/connection");
 var assert = require('assert');
 var fixtures = require("./fixtures");
 

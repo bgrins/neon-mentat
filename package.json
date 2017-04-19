@@ -1,8 +1,8 @@
 {
-  "name": "neon-project",
+  "name": "neon-mentat",
   "version": "0.1.0",
-  "description": "test",
-  "main": "lib/index.js",
+  "description": "Use neon-cli to call mentat from node",
+  "main": "./lib/connection",
   "author": "Brian Grinstead <briangrinstead@gmail.com>",
   "license": "MIT",
   "dependencies": {
@@ -11,7 +11,7 @@
   },
   "scripts": {
     "start": "npm install && node -e 'require(\"./\")'",
-    "install": "node node_modules/neon-cli/bin/cli.js build",
+    "postinstall": "node .bin/postinstall.js",
     "test": "mocha"
   }
 }
