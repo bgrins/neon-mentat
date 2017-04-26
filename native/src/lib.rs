@@ -164,7 +164,10 @@ declare_types! {
                 }
             }
 
-            try!(output.set("resultsLength", JsInteger::new(scope, results.len() as i32)));
+            // TODO: Is this useful?  Length can be gathered via `foo.results.length`, so removing
+            // this for now..
+            // try!(output.set("resultsLength", JsInteger::new(scope, results.len() as i32)));
+
             Ok(output.upcast())
         }
   }
