@@ -30,16 +30,26 @@ describe('Connection', function () {
             var input = fixtures.data;
             var result = conn.transact(input);
         });
-        it('should query (1)', function () {
-            var input = "[:find ?x ?ident :where [?x :db/ident ?ident]]";
+        it('should query (Scalar - Some)', function() {
+            var input = `[:find ?ident . :where [24 :db/ident ?ident]]`;
             var result = conn.query(input);
-            console.log(result);
-            assert.equal(result.resultsLength, 46);
+            assert.equal(result.results[0], ':db.type/keyword');
+            assert.equal(result.resultsLength, 1);
+        });
+        it('should query (Scalar - None)', function() {
+            var input = `[:find ?ident . :where [10000 :db/ident ?ident]]`;
+            var result = conn.query(input);
+            assert.equal(result.results.length, 0);
+            assert.equal(result.resultsLength, 0);
         });
         it('should query (Coll)', function() {
             var input = `[:find [?e ...] :where [?e :db/ident _]]`;
             var result = conn.query(input);
-            console.log(result);
+            assert.equal(result.resultsLength, 46);
+        });
+        it('should query (1)', function () {
+            var input = "[:find ?x ?ident :where [?x :db/ident ?ident]]";
+            var result = conn.query(input);
             assert.equal(result.resultsLength, 46);
         });
         it('should query (2)', function () {
@@ -48,7 +58,6 @@ describe('Connection', function () {
                 :where
                 [?e :person/name "James Cameron" _]]`;
             var result = conn.query(input);
-            console.log(result);
             assert.equal(result.resultsLength, 1);
         });
 
@@ -69,7 +78,6 @@ describe('Connection', function () {
                 [?e :movie/title ?title]]
             `;
             var result = conn.query(input);
-            console.log(result);
             assert.equal(result.resultsLength, 3);
         });
 

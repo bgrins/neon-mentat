@@ -87,12 +87,27 @@ declare_types! {
             use QueryResults::*;
             match results {
                 &Scalar(None) => {
-                    // println!("TODO: Matched Scalar None");
-                    // Didn't return a result. JS `undefined`?
+                    // Query didn't return a result
+                    let array: Handle<JsArray> = JsArray::new(scope, 0);
+                    try!(output.set("results", array));
                 },
                 &Scalar(Some(ref v)) => {
-                    // println!("TODO: Matched Scalar Some {:?}", v);
-                    // process_typed_value(scope, v)
+                    let array: Handle<JsArray> = JsArray::new(scope, 1);
+                    let processed_value = process_typed_value(scope, v);
+
+                    // TODO: Can we match all possible types with a single pattern
+                    match processed_value {
+                        ReturnedHandle::JsString(handle) => {
+                            try!(array.set(0, handle));
+                        }
+                        ReturnedHandle::JsBoolean(handle) => {
+                            try!(array.set(0, handle));
+                        }
+                        ReturnedHandle::JsNumber(handle) => {
+                            try!(array.set(0, handle));
+                        }
+                    }
+                    try!(output.set("results", array));
                 },
                 &Tuple(None) => {
                     // println!("TODO: Matched Tuple None");
@@ -171,7 +186,6 @@ enum ReturnedHandle<'a> {
 
 //     return neon_value;
 // }
-
 
 fn process_typed_value<'a, 'b>(scope: &mut neon::scope::RootScope<'a>, item: &'b TypedValue) -> ReturnedHandle<'a> {
     let neon_value = match item {
