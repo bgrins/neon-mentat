@@ -14,9 +14,9 @@ neon-build = "0.1.14"
 
 [dependencies]
 neon = "0.1.14"
-mentat = { git = "https://github.com/mozilla/mentat", rev = "bffefe7e6bcb0b5580979a8a782f0a97185f649a"}
-mentat_db = { git = "https://github.com/mozilla/mentat", rev = "bffefe7e6bcb0b5580979a8a782f0a97185f649a" }
-mentat_core = { git = "https://github.com/mozilla/mentat", rev = "bffefe7e6bcb0b5580979a8a782f0a97185f649a" }
+mentat = { git = "https://github.com/mozilla/mentat", rev = "e64ee5864eb4486b91d2ad8b51a2358dec5af700"}
+mentat_db = { git = "https://github.com/mozilla/mentat", rev = "e64ee5864eb4486b91d2ad8b51a2358dec5af700" }
+mentat_core = { git = "https://github.com/mozilla/mentat", rev = "e64ee5864eb4486b91d2ad8b51a2358dec5af700" }
 
 [dependencies.rusqlite]
 version = "0.10.1"

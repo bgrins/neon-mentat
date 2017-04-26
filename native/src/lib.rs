@@ -81,7 +81,6 @@ declare_types! {
 
             let results = &db.q_once(&rusqlite_connection,
                                 input.value().as_str(),
-                                None,
                                 None)
                 .expect("Query failed");
 
