@@ -100,6 +100,15 @@ describe('Connection', function () {
             var input = musicbrainz.data;
             var response = conn.transact(input);
         });
+        it('should query (1)', function () {
+            var input = `
+                [:find ?name
+                :where
+                [?p :artist/name ?name]]`;
+            var response = conn.query(input);
+            console.log(response);
+            assert.equal(response.results.length, 1);
+        });
     });
 });
 
