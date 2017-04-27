@@ -1,6 +1,7 @@
 var Connection = require("../lib/connection");
 var assert = require('assert');
 var fixtures = require("./fixtures");
+var musicbrainz = require("./musicbrainz");
 
 describe('Connection', function () {
     describe('basics', function () {
@@ -86,6 +87,19 @@ describe('Connection', function () {
             assert.equal(conn.close(), "Not implemented");
         });
 
+    });
+
+    describe('with musicbrainz', function () {
+        var conn = new Connection();
+        it('should transact (1)', function () {
+            var input = musicbrainz.schema;
+            var response = conn.transact(input);
+            assert.equal(response, 0x10000000 + 1);
+        });
+        it('should transact (2)', function () {
+            var input = musicbrainz.data;
+            var response = conn.transact(input);
+        });
     });
 });
 
