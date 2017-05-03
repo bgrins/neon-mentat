@@ -2,14 +2,18 @@
 #![allow(unused_variables)]
 #![allow(unused_imports)]
 
+extern crate chrono;
+extern crate mentat;
+
 #[macro_use]
 extern crate neon;
-extern crate mentat;
-extern crate mentat_db;
-extern crate mentat_core;
 extern crate rusqlite;
 
-use mentat_core::{TypedValue, ValueType};
+use chrono::{
+    DateTime,
+    UTC,
+};
+
 use neon::mem::Handle;
 use neon::vm::Lock;
 use neon::vm::{Call, JsResult};
@@ -18,15 +22,22 @@ use neon::js::{JsString, JsNumber, Object, JsArray, JsObject, JsInteger, JsBoole
 use neon::js::class::Class;
 
 use neon::js::error::{JsError, Kind};
-use mentat::{new_connection, conn, QueryResults};
+
+use mentat::{
+    Conn,
+    QueryResults,
+    TypedValue,
+    ValueType,
+    conn,
+    new_connection,
+};
 
 use std::rc::Rc;
 use std::cell::RefCell;
 
-
 pub struct Connection {
     rusqlite_connection: Rc<RefCell<rusqlite::Connection>>,
-    conn: Rc<RefCell<conn::Conn>>,
+    conn: Rc<RefCell<Conn>>,
 }
 
 declare_types! {
@@ -190,11 +201,17 @@ enum ReturnedHandle<'a> {
 //     return neon_value;
 // }
 
+fn js_date<'a, 'b>(scope: &mut neon::scope::RootScope<'a>, item: &'b DateTime<UTC>) -> ReturnedHandle<'a> {
+    unimplemented!()
+}
+
 fn process_typed_value<'a, 'b>(scope: &mut neon::scope::RootScope<'a>, item: &'b TypedValue) -> ReturnedHandle<'a> {
     let neon_value = match item {
         &TypedValue::Ref(id) => ReturnedHandle::JsNumber(JsNumber::new(scope, id as f64)),
         &TypedValue::Boolean(b) => ReturnedHandle::JsBoolean(JsBoolean::new(scope, b)),
         &TypedValue::Long(l) => ReturnedHandle::JsNumber(JsNumber::new(scope, l as f64)),
+        &TypedValue::Instant(t) => js_date(scope, &t),
+        &TypedValue::Uuid(u) => ReturnedHandle::JsString(JsString::new_or_throw(scope, u.to_string().as_str()).unwrap()),
         &TypedValue::String(ref s) => ReturnedHandle::JsString(JsString::new_or_throw(scope, s.as_str()).unwrap()),
         &TypedValue::Keyword(ref k) => ReturnedHandle::JsString(JsString::new_or_throw(scope, k.to_string().as_str()).unwrap()),
         &TypedValue::Double(d) => ReturnedHandle::JsNumber(JsNumber::new(scope, *d.as_ref())), // TODO: Check if this works
