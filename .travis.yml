@@ -14,9 +14,5 @@ before_install:
   - npm install -g mocha
   - npm install
 
-matrix:
-  allow_failures:
-    - rust: nightly
-
 script: |
   npm test

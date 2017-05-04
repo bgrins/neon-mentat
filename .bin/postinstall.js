@@ -13,7 +13,7 @@ if (!fs.existsSync(cliPath)) {
     cliPath = '../neon-cli/bin/cli.js';
     console.log("Couldn't find it, now attempting: " + path.resolve(cliPath));
 }
-const nodeProcess = spawn('node', [cliPath, 'build']);
+const nodeProcess = spawn('node', [cliPath, 'build', '--path', '.']);
 nodeProcess.stdout.on('data', (data) => {
     process.stdout.write(data);
 });
