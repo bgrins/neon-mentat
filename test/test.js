@@ -13,7 +13,7 @@ describe('Connection', function () {
         it('should query', function () {
             var input = "[:find ?x ?ident :where [?x :db/ident ?ident]]";
             var response = conn.query(input);
-            assert.equal(response.results.length, 37);
+            assert.equal(response.results.length, 39);
         });
         it('should close', function () {
             assert.equal(conn.close(), "Not implemented");
@@ -45,12 +45,12 @@ describe('Connection', function () {
         it('should query (Coll)', function() {
             var input = `[:find [?e ...] :where [?e :db/ident _]]`;
             var response = conn.query(input);
-            assert.equal(response.results.length, 46);
+            assert.equal(response.results.length, 48);
         });
         it('should query (1)', function () {
             var input = "[:find ?x ?ident :where [?x :db/ident ?ident]]";
             var response = conn.query(input);
-            assert.equal(response.results.length, 46);
+            assert.equal(response.results.length, 48);
         });
         it('should query (2)', function () {
             var input = `

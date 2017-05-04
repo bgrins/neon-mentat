@@ -5,9 +5,10 @@
   "main": "./lib/connection",
   "author": "Brian Grinstead <briangrinstead@gmail.com>",
   "license": "MIT",
+  "repository": "https://github.com/bgrins/neon-mentat",
   "dependencies": {
     "mocha": "^3.2.0",
-    "neon-cli": "^0.1.14"
+    "neon-cli": "0.1.15"
   },
   "scripts": {
     "start": "npm install && node -e 'require(\"./lib/index\")'",

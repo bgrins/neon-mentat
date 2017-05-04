@@ -10,14 +10,12 @@ name = "neon_project"
 crate-type = ["dylib"]
 
 [build-dependencies]
-neon-build = "0.1.14"
+neon-build = "0.1.15"
 
 [dependencies]
 chrono = "0.3"
-neon = "0.1.14"
+neon = "0.1.15"
 mentat = { git = "https://github.com/mozilla/mentat", rev = "1dc8a3e"}
-mentat_db = { git = "https://github.com/mozilla/mentat", rev = "1dc8a3e" }
-mentat_core = { git = "https://github.com/mozilla/mentat", rev = "1dc8a3e" }
 
 [dependencies.rusqlite]
 version = "0.11"
